@@ -14,7 +14,7 @@ var app = require("express")();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-server.listen(8000);
+server.listen(process.env.PORT || 8000);
 
 var nyt = require('newyorktimes')({ times_newswire: '20f4728f3b2f42c597ddc3030a24fd00' });
 
@@ -103,7 +103,6 @@ io.on('connection', function (socket) {
     };
 
     io.emit('buzz', { gldata: JSON.stringify(buzzData), heads: JSON.stringify(buzzHeads)} );
-    console.log("sent buzz", buzzData);
 
   });
 
