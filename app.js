@@ -60,7 +60,7 @@ io.on('connection', function (socket) {
           if (!err) {
             nytData.push(response.json.results[0].geometry.location['lat']);
             nytData.push(response.json.results[0].geometry.location['lng']);
-            nytData.push(1);
+            nytData.push(25);
           }
         });
       }
@@ -76,7 +76,7 @@ io.on('connection', function (socket) {
     url: 'http://www.buzzfeed.com/api/v2/feeds/news',
   }, function(err, response, body) {
 
-    var buzzData = [];
+    var buzzData = [], buzzHeads = [];
 
     body = JSON.parse(body);
     
@@ -88,6 +88,7 @@ io.on('connection', function (socket) {
             buzzData.push(parseFloat(body['big_stories'][i]['content_items'][j]['datelines'][0]['marker_lat']));
             buzzData.push(parseFloat(body['big_stories'][i]['content_items'][j]['datelines'][0]['marker_lng']));
             buzzData.push(25);
+            buzzHeads.push(body['big_stories'][i]['content_items'][j]['title']);
           }
         };
     };
@@ -97,10 +98,11 @@ io.on('connection', function (socket) {
         buzzData.push(parseFloat(body['buzzes'][i]['datelines'][0]['marker_lat']));
         buzzData.push(parseFloat(body['buzzes'][i]['datelines'][0]['marker_lng']));
         buzzData.push(25);
+        buzzHeads.push(body['buzzes'][i]['title']);
       }
     };
 
-    io.emit('buzz', { gldata: JSON.stringify(buzzData)} );
+    io.emit('buzz', { gldata: JSON.stringify(buzzData), heads: JSON.stringify(buzzHeads)} );
     console.log("sent buzz", buzzData);
 
   });

@@ -2,9 +2,12 @@ extends layout
 
 block content
   script(src="https://cdn.socket.io/socket.io-1.4.5.js")
+  script(async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjHKGczt8QjINcTVQ4iZGXsSsYBESXipo&callback=initMap")
+
   style(type='text/css').
     html {
       height: 100%;
+      width: 100%;
     }
     body {
       margin: 0;
@@ -15,15 +18,6 @@ block content
       font-size: 13px;
       line-height: 20px;
       height: 100%;
-    }
-    #info {
-      font-size: 11px;
-      position: absolute;
-      bottom: 5px;
-      background-color: rgba(0, 0, 0, 0.8);
-      border-radius: 3px;
-      right: 10px;
-      padding: 10px;
     }
     a {
       color: #aaa;
@@ -36,47 +30,34 @@ block content
       padding: 0px 5px;
       color: #555;
     }
-    #title {
-      position: absolute;
-      top: 20px;
-      width: 320px;
-      left: 20px;
-      background-color: rgba(0, 0, 0, 0.2);
-      font: 20px/20px Georgia;
-      padding: 15px;
-    }
-    #ce span {
-      display: none;
-    }
-    #ce {
-      width: 107px;
-      height: 55px;
-      display: block;
-      position: absolute;
-      bottom: 15px;
-      left: 20px;
-      background: url(ce.png);
-    }
     #container {
       height: 75%;
     }
+    #newsContainer div {
+      padding: 0;
+      margin: 0;
+    }
+    #newsContainer {
+      height: 25%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    #newsCol {
+      height: 100%;
+      overflow: auto;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
   body
-    #container
-    #gmapContainer(style='background: blue; height: 25%;')
-      | This is a banana!
-    #info
-      | The 
-      a(href='http://www.chromeexperiments.com/globe') WebGL Globe
-      |  is an
-      |   open platform for visualizing geographic data. 
-      span.bull •
-      a(href='https://github.com/dataarts/webgl-globe')
-        | Get
-        | the code
-      span.bull •
-      |  By the Google Data Arts Team
-    #title
-      | News Articles
+    div#container
+    div#newsContainer(class="container row")
+      div#newsCol(class="col-md-9")
+        div#newsList(class="list-group")
+      div(class="col-md-3" style="height: 100%;")
+        div#map
 
     script(type='text/javascript').
       var globe = DAT.Globe(document.getElementById('container'), {
@@ -90,12 +71,15 @@ block content
         }
       });
 
+      var map;
+
       var data = [[],[]];
 
       var origin = window.location.origin;
-      console.log(window.location.origin);
-      var socket = io.connect(origin + ":8000");
-      
+      //console.log(window.location.origin);
+      //var socket = io.connect(origin + ":8000");
+      var socket = io.connect("localhost:8000");
+
       socket.on('nyt', function (data) {
         console.log(data);
         window.data[1] = data['gldata'];
@@ -103,6 +87,9 @@ block content
         globe.createPoints();
         globe.animate();
         document.body.style.backgroundImage = 'none'; // remove loading
+
+        //add markers every two data points
+
       });
       socket.on('buzz', function (data) {
         console.log("buzz", data);
@@ -112,5 +99,40 @@ block content
         globe.createPoints();
         globe.animate();
         document.body.style.backgroundImage = 'none'; // remove loading
+
+        var buzzHeads = JSON.parse(data['heads'])
+
+        for(i = 0; i < buzzHeads.length; i++){
+
+          $('#newsList').append("<a href='#' value='" + i + "' onclick='clickList(this)' class='list-group-item'>" + buzzHeads[i] + "</a>");
+
+          new google.maps.Marker({
+            position: {lat: window.data[0][i*3], lng: window.data[0][i*3+1]},
+            map: map,
+            title: 'Hello World!'
+          });
+        }
+
+        map.setCenter({lat: window.data[0][0], lng: window.data[0][1]});
+
       });
+
+      function clickList(elem){
+
+        $("#newsList a.list-group-item").removeClass("active");
+        $(elem).addClass("active");
+        console.log(parseInt($(elem).attr('value')));
+        map.setCenter(
+          {lat: window.data[0][parseInt($(elem).attr('value'))*3], 
+          lng: window.data[0][parseInt($(elem).attr('value'))*3+1]});
+
+      }
+
+      function initMap() {
+
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 4,
+          center: {lat: -25.363, lng: 131.044}
+        });
+      }
 
