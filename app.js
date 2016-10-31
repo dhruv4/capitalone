@@ -100,7 +100,7 @@ io.on('connection', function (socket) {
       }
     };
 
-    io.emit('buzz', { data: JSON.stringify(buzzData)} );
+    io.emit('buzz', { gldata: JSON.stringify(buzzData)} );
     console.log("sent buzz", buzzData);
 
   });

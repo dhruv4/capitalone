@@ -90,18 +90,15 @@ block content
         }
       });
 
-      //console.log(#{dataset});
-
-      //var data = JSON.parse( #{dataset} );
       var data = [[],[]];
-      //var data = [[].];
 
-      //var origin = window.location.origin;
-      var socket = io.connect("http://localhost:8000");
+      var origin = window.location.origin;
+      console.log(window.location.origin);
+      var socket = io.connect(origin + ":8000");
       
       socket.on('nyt', function (data) {
         console.log(data);
-        window.data[1] = data['data'];
+        window.data[1] = data['gldata'];
         globe.addData(data, {format: 'legend'});
         globe.createPoints();
         globe.animate();
@@ -109,7 +106,7 @@ block content
       });
       socket.on('buzz', function (data) {
         console.log("buzz", data);
-        window.data[0] = JSON.parse(data['data']);
+        window.data[0] = JSON.parse(data['gldata']);
         console.log(window.data);
         globe.addData(window.data[0], {format: 'legend'});
         globe.createPoints();
