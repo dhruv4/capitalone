@@ -1,5 +1,119 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  script(src="https://cdn.socket.io/socket.io-1.4.5.js")
+  style(type='text/css').
+    html {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000000 url(loading.gif) center center no-repeat;
+      color: #ffffff;
+      font-family: sans-serif !important;
+      font-size: 13px;
+      line-height: 20px;
+      height: 100%;
+    }
+    #info {
+      font-size: 11px;
+      position: absolute;
+      bottom: 5px;
+      background-color: rgba(0, 0, 0, 0.8);
+      border-radius: 3px;
+      right: 10px;
+      padding: 10px;
+    }
+    a {
+      color: #aaa;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .bull {
+      padding: 0px 5px;
+      color: #555;
+    }
+    #title {
+      position: absolute;
+      top: 20px;
+      width: 320px;
+      left: 20px;
+      background-color: rgba(0, 0, 0, 0.2);
+      font: 20px/20px Georgia;
+      padding: 15px;
+    }
+    #ce span {
+      display: none;
+    }
+    #ce {
+      width: 107px;
+      height: 55px;
+      display: block;
+      position: absolute;
+      bottom: 15px;
+      left: 20px;
+      background: url(ce.png);
+    }
+    #container {
+      height: 75%;
+    }
+  body
+    #container
+    #gmapContainer(style='background: blue; height: 25%;')
+      | This is a banana!
+    #info
+      | The 
+      a(href='http://www.chromeexperiments.com/globe') WebGL Globe
+      |  is an
+      |   open platform for visualizing geographic data. 
+      span.bull •
+      a(href='https://github.com/dataarts/webgl-globe')
+        | Get
+        | the code
+      span.bull •
+      |  By the Google Data Arts Team
+    #title
+      | News Articles
+
+    script(type='text/javascript').
+      var globe = DAT.Globe(document.getElementById('container'), {
+        colorFn: function(label) {
+          return new THREE.Color([
+            0xd9d9d9, 0xb6b4b5, 0x9966cc, 0x15adff, 0x3e66a3,
+            0x216288, 0xff7e7e, 0xff1f13, 0xc0120b, 0x5a1301, 0xffcc02,
+            0xedb113, 0x9fce66, 0x0c9a39,
+            0xfe9872, 0x7f3f98, 0xf26522, 0x2bb673, 0xd7df23,
+            0xe6b23a, 0x7ed3f7][label]);
+        }
+      });
+
+      //console.log(#{dataset});
+
+      //var data = JSON.parse( #{dataset} );
+      var data = [[],[]];
+      //var data = [[].];
+
+      //var origin = window.location.origin;
+      var socket = io.connect("http://localhost:8000");
+      
+      socket.on('nyt', function (data) {
+        console.log(data);
+        window.data[1] = data['data'];
+        globe.addData(data, {format: 'legend'});
+        globe.createPoints();
+        globe.animate();
+        document.body.style.backgroundImage = 'none'; // remove loading
+      });
+      socket.on('buzz', function (data) {
+        console.log("buzz", data);
+        window.data[0] = JSON.parse(data['data']);
+        console.log(window.data);
+        globe.addData(window.data[0], {format: 'legend'});
+        globe.createPoints();
+        globe.animate();
+        document.body.style.backgroundImage = 'none'; // remove loading
+      });
+
